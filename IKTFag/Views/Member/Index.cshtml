@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "IKT-Fag Member Area";
+}
+
+@if (ViewData["Flash"] != null)
+{
+    <div class="alert alert-success">
+        <p>@ViewData["Flash"]</p>
+    </div>
+}
+
+<div class="container">
+    <div class="jumbotron">
+        <h1>@ViewData["Username"]</h1>
+        <p class="lead">@ViewData["Message"]</p>
+    </div>
+</div>
