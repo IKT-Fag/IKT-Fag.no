@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-namespace WebApp_OpenIDConnect_DotNet.Controllers
+namespace IKTFag.Controllers
 {
     public class AccountController : Controller
     {
