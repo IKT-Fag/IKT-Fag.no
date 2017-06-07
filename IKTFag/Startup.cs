@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Session;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace IKTFag
 {
@@ -41,6 +43,9 @@ namespace IKTFag
                 options.IdleTimeout = TimeSpan.FromSeconds(10);
                 options.CookieHttpOnly = true;
             });
+
+            // Azure AD support
+            services.AddAuthentication(sharedOptions => sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

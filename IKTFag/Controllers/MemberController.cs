@@ -28,7 +28,7 @@ namespace IKTFag.Controllers
         {
             if (HttpContext.Request.Method == "POST")
             {
-                // TODO login logic
+                // TODO: login logic
                 string username = "bope1305";
                 string flash = String.Format("Welcome, {0}", username);
 
