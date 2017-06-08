@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,35 +7,49 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 namespace IKTFag.Controllers
 {
     public class AccountController : Controller
     {
-        // GET: /Account/Login
+        //
+        // GET: /Account/SignIn
         [HttpGet]
-        public async Task Login()
+        public IActionResult SignIn()
         {
-            if (HttpContext.User == null || !HttpContext.User.Identity.IsAuthenticated)
-                await HttpContext.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+            return Challenge(
+                new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectDefaults.AuthenticationScheme);
         }
 
-        // GET: /Account/LogOff
+        //
+        // GET: /Account/SignOut
         [HttpGet]
-        public async Task LogOff()
+        public IActionResult SignOut()
+        {
+            var callbackUrl = Url.Action(nameof(SignedOut), "Account", values: null, protocol: Request.Scheme);
+            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
+                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+        //
+        // GET: /Account/SignedOut
+        [HttpGet]
+        public IActionResult SignedOut()
         {
             if (HttpContext.User.Identity.IsAuthenticated)
             {
-                await HttpContext.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-                await HttpContext.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                // Redirect to home page if the user is authenticated.
+                return RedirectToAction(nameof(HomeController.Index), "Home");
             }
+
+            return View();
         }
 
+        //
+        // GET: /Account/AccessDenied
         [HttpGet]
-        public async Task EndSession()
+        public IActionResult AccessDenied()
         {
-            // If AAD sends a single sign-out message to the app, end the user's session, but don't redirect to AAD for sign out.
-            await HttpContext.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return View();
         }
     }
 }

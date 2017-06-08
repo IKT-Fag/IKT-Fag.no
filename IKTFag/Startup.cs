@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Session;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace IKTFag
 {
@@ -22,8 +18,14 @@ namespace IKTFag
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets<Startup>();
+            }
+            builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
@@ -35,19 +37,8 @@ namespace IKTFag
             // Add framework services.
             services.AddMvc();
 
-            // Adds session support
-            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/app-state
-            // http://benjii.me/2016/07/using-sessions-and-httpcontext-in-aspnetcore-and-mvc-core/
-            services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
-                // for testing
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
-                options.CookieHttpOnly = true;
-            });
-
-            // Azure AD support
-            services.AddAuthentication(sharedOptions => sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+            services.AddAuthentication(
+                SharedOptions => SharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,7 +58,15 @@ namespace IKTFag
             }
 
             app.UseStaticFiles();
-            app.UseSession();
+
+            app.UseCookieAuthentication();
+
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
+            {
+                ClientId = Configuration["Authentication:AzureAd:ClientId"],
+                Authority = Configuration["Authentication:AzureAd:AADInstance"] + Configuration["Authentication:AzureAd:TenantId"],
+                CallbackPath = Configuration["Authentication:AzureAd:CallbackPath"]
+            });
 
             app.UseMvc(routes =>
             {
